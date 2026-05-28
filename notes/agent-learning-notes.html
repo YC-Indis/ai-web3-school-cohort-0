@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>从 ToolCall 开始组装自己的 Claw — Agent 学习笔记</title>
+<style>
+  :root {
+    --bg: #0b0d14;
+    --surface: #12151f;
+    --surface2: #181c2a;
+    --border: #252a3a;
+    --ink: #e4e6ef;
+    --ink-dim: #8b8fa3;
+    --ink-muted: #5c6075;
+    --accent: #7c8aff;
+    --accent-glow: rgba(124,138,255,0.12);
+    --green: #4ade80;
+    --amber: #fbbf24;
+    --rose: #f472b6;
+    --cyan: #22d3ee;
+    --orange: #fb923c;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    background: var(--bg);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.7;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,138,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,138,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    padding: 80px 0 50px;
+    text-align: center;
+    position: relative;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 14px; border-radius: 100px;
+    background: var(--accent-glow);
+    border: 1px solid rgba(124,138,255,0.2);
+    color: var(--accent); font-size: 12px; font-weight: 500;
+    margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-size: clamp(26px, 4.5vw, 42px);
+    font-weight: 700; letter-spacing: -0.5px; line-height: 1.2;
+    margin-bottom: 14px;
+  }
+  .hero h1 .hl { color: var(--accent); }
+  .hero p { font-size: 15px; color: var(--ink-dim); max-width: 560px; margin: 0 auto; }
+  .hero-meta {
+    display: flex; justify-content: center; gap: 20px;
+    margin-top: 18px; font-size: 12px; color: var(--ink-muted);
+    flex-wrap: wrap;
+  }
+
+  /* ===== SECTION ===== */
+  section { margin-top: 70px; }
+
+  .section-label {
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 2px;
+    color: var(--accent); margin-bottom: 8px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-label::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, rgba(124,138,255,0.3), transparent);
+  }
+  .section-title {
+    font-size: clamp(22px, 3vw, 30px);
+    font-weight: 700; letter-spacing: -0.3px; margin-bottom: 8px;
+  }
+  .section-sub {
+    color: var(--ink-dim); font-size: 14px; margin-bottom: 28px;
+  }
+
+  /* ===== NOTE ===== */
+  .aside-note {
+    background: rgba(124,138,255,0.06);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 14px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+  }
+  .aside-note strong { color: var(--accent); }
+
+  /* ===== INSIGHT ===== */
+  .insight {
+    background: linear-gradient(135deg, rgba(244,114,182,0.06), rgba(124,138,255,0.06));
+    border: 1px solid rgba(124,138,255,0.12);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin: 24px 0;
+    position: relative;
+  }
+  .insight::before {
+    content: '💡';
+    position: absolute;
+    top: -10px; left: 16px;
+    font-size: 20px;
+  }
+  .insight p {
+    font-size: 14px; color: var(--ink); line-height: 1.7;
+  }
+  .insight .attr {
+    margin-top: 10px; font-size: 12px; color: var(--ink-muted);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .insight .attr::before {
+    content: ''; width: 18px; height: 1px;
+    background: var(--ink-muted);
+  }
+
+  /* ===== CODE BLOCK ===== */
+  .code-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+    margin: 16px 0;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--ink-dim);
+    white-space: pre;
+  }
+
+  /* ===== TABLE ===== */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 16px 0;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 600px;
+  }
+  thead {
+    background: var(--surface2);
+  }
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink-dim);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-weight: 500; color: var(--ink); white-space: nowrap; }
+
+  /* ===== CARD GRID ===== */
+  .card-grid {
+    display: grid;
+    gap: 10px;
+    margin: 16px 0;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  .card-simple {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+  }
+  .card-simple .emoji { font-size: 20px; display: block; margin-bottom: 6px; }
+  .card-simple .name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .card-simple .desc { font-size: 12px; color: var(--ink-dim); }
+
+  /* ===== COMPARISON GRID ===== */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 16px 0;
+  }
+  @media (max-width: 640px) { .compare { grid-template-columns: 1fr; } }
+  .compare-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .compare-card h4 {
+    font-size: 15px; font-weight: 600; margin-bottom: 8px;
+  }
+  .compare-card ul {
+    list-style: none;
+  }
+  .compare-card ul li {
+    font-size: 13px; color: var(--ink-dim);
+    padding: 3px 0 3px 14px;
+    position: relative;
+  }
+  .compare-card ul li::before {
+    content: '→';
+    position: absolute; left: 0;
+    color: var(--accent);
+  }
+
+  /* ===== THREE PILLARS ===== */
+  .pillar-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 20px 0;
+  }
+  @media (max-width: 640px) { .pillar-grid { grid-template-columns: 1fr; } }
+  .pillar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 18px;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .pillar:hover { border-color: var(--accent); }
+  .pillar .emoji { font-size: 30px; display: block; margin-bottom: 10px; }
+  .pillar h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .pillar p { font-size: 12px; color: var(--ink-dim); line-height: 1.6; }
+
+  /* ===== TIMELINE MINI ===== */
+  .mini-tl { margin: 20px 0; }
+  .tl-item {
+    display: flex;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .tl-item:last-child { border-bottom: none; }
+  .tl-num {
+    font-family: var(--font-mono);
+    font-size: 11px; color: var(--ink-muted);
+    min-width: 28px; padding-top: 1px;
+  }
+  .tl-body { flex: 1; }
+  .tl-body .tl-title { font-size: 14px; font-weight: 600; }
+  .tl-body .tl-desc { font-size: 13px; color: var(--ink-dim); margin-top: 2px; }
+
+  /* ===== DIVIDER ===== */
+  .section-divider {
+    margin: 32px 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+
+  /* ===== TAG ===== */
+  .tag {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .tag-purple { background: rgba(124,138,255,0.15); color: var(--accent); }
+  .tag-green  { background: rgba(74,222,128,0.15); color: var(--green); }
+  .tag-amber  { background: rgba(251,191,36,0.15); color: var(--amber); }
+  .tag-rose   { background: rgba(244,114,182,0.15); color: var(--rose); }
+  .tag-cyan   { background: rgba(34,211,238,0.15); color: var(--cyan); }
+
+  /* ===== FOOTER ===== */
+  .footer-note {
+    margin-top: 80px;
+    padding-top: 32px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+  .footer-note p { font-size: 12px; color: var(--ink-muted); }
+  .footer-note .sig { margin-top: 6px; font-size: 12px; color: var(--ink-dim); }
+
+  /* ===== FADE-IN ===== */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 480px) {
+    .hero { padding: 50px 0 30px; }
+    .hero-meta { flex-direction: column; gap: 6px; }
+  }
+
+  @media print {
+    body::before { display: none; }
+    .pillar:hover { border-color: var(--border); }
+    .page { padding-bottom: 30px; }
+  }
+
+  /* ===== extra: REACT diagram ===== */
+  .react-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+  .react-box {
+    padding: 8px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .react-arrow { color: var(--ink-muted); font-size: 18px; }
+  .box-think { background: rgba(124,138,255,0.2); color: var(--accent); }
+  .box-act   { background: rgba(251,191,36,0.2); color: var(--amber); }
+  .box-end   { background: rgba(74,222,128,0.2); color: var(--green); }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ===== HERO ===== -->
+  <header class="hero">
+    <div class="hero-badge">📚 课程笔记 · 木乔——mikio</div>
+    <h1>从 ToolCall 开始<br>组装自己的 <span class="hl">Claw</span></h1>
+    <p>记录我从一个 AI 使用者，到理解 Agent 本质的认知转变过程</p>
+    <div class="hero-meta">
+      <span>📅 2026.05 — Week 2</span>
+      <span>✍️ YC-Indis</span>
+      <span>🎯 方向：AI Product Manager</span>
+    </div>
+  </header>
+
+  <!-- ===== 0. 前言 ===== -->
+  <section class="fade-in">
+    <div class="section-label">前言</div>
+    <h2 class="section-title">课程定位</h2>
+    <p class="section-sub">从 ToolCall 自底向上，理解 Agent 的一切</p>
+
+    <p style="font-size:14px; color:var(--ink-dim); line-height:1.8; margin-bottom:16px;">
+      自去年 Manus 爆火，Agent 概念开始走入大众视野。如何让模型接触现实、解决现实任务，是近一年来的重中之重。MCP、ReAct、Context Engineer、Skill、Harness Engineer、Claw……众多概念层出不穷，Agent 的复杂度也一步步加深，到 <strong>Claw</strong> 已经标志迈向产品化的阶段。
+    </p>
+
+    <div class="aside-note">
+      <strong> MokioClaw 三层定位：</strong><br>
+      核心层 — 代码编辑与 repo 操作<br>
+      通用层 — 文件处理、命令执行、报告生成<br>
+      扩展层 — 天气、飞书、日常 API、Skills、MCP、HITL
+    </div>
+
+    <div class="insight">
+      <p>一切的后续，本质都是对模型输入输出的文本进行操作。从最简单的字符串处理开始，理解 ToolCall 的本质。</p>
+    </div>
+
+    <!-- 内容划分 -->
+    <p style="font-size:13px; color:var(--ink-muted); margin-top:20px; margin-bottom:10px;">课程共 25 个章节，分为四大板块：</p>
+    <div class="card-grid" style="grid-template-columns: repeat(4, 1fr);">
+      <div class="card-simple"><span class="emoji">🧱</span><div class="name">基础概念</div><div class="desc">LangChain / LangGraph 速通</div></div>
+      <div class="card-simple"><span class="emoji">🔄</span><div class="name">Agent 模式</div><div class="desc">ReAct / Reflection / Plan-Execute / MultiAgent</div></div>
+      <div class="card-simple"><span class="emoji">🔧</span><div class="name">工程化</div><div class="desc">Context / Harness Engineer + Skill</div></div>
+      <div class="card-simple"><span class="emoji">🚀</span><div class="name">产品化</div><div class="desc">Claw 交互层 + 飞书接入</div></div>
+    </div>
+  </section>
+
+  <!-- ===== 1. LangChain & LangGraph 速通 ===== -->
+  <section class="fade-in">
+    <div class="section-label">第 1 章</div>
+    <h2 class="section-title">前置知识速通</h2>
+    <p class="section-sub">搭积木前，先认识积木盒里的每个零件</p>
+
+    <h3 style="font-size:16px; font-weight:600; margin-bottom:8px;">📦 LangChain 核心概念</h3>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>概念</th><th>简单解释</th><th>一句话理解</th></tr></thead>
+      <tbody>
+        <tr><td>LangChain</td><td>LLM 应用组件工具箱</td><td>不是 Agent 本身，更像搭 Agent 的积木盒</td></tr>
+        <tr><td>Model</td><td>接入的大模型本体</td><td>模型负责思考，但不会自动完成整个流程</td></tr>
+        <tr><td>Prompt</td><td>给模型的指令模板</td><td>就像给模型写操作说明书</td></tr>
+        <tr><td>Message</td><td>统一管理 system/user/assistant 消息</td><td>模型看到的上下文载体</td></tr>
+        <tr><td><strong>Tool</strong></td><td>本质是可调用函数，有明确输入输出</td><td>模型伸向现实世界的手</td></tr>
+        <tr><td><strong>Tool Calling</strong></td><td>模型不只输出文本，还输出"调哪个工具"</td><td>这一步，从聊天走向执行</td></tr>
+        <tr><td>Chain</td><td>把多个步骤串起来</td><td>一条固定流水线</td></tr>
+        <tr><td>Output Parser</td><td>把模型输出整理成结构化结果</td><td>把胡言乱语变成程序能读的格式</td></tr>
+        <tr><td>Agent</td><td>能决定要不要调工具、怎么继续推进的执行体</td><td>不只是回答问题，会自己决定下一步</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <h3 style="font-size:16px; font-weight:600; margin-bottom:8px;">🕸️ LangGraph 核心概念</h3>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>概念</th><th>简单解释</th><th>一句话理解</th></tr></thead>
+      <tbody>
+        <tr><td>LangGraph</td><td>Agent 流程编排框架</td><td>不是多一个模型，而是一套流程控制系统</td></tr>
+        <tr><td>State</td><td>整个图共享的状态数据</td><td>Agent 的工作记忆和任务面板</td></tr>
+        <tr><td>Node</td><td>图里的一个步骤</td><td>流程图里的一个工位</td></tr>
+        <tr><td>Edge</td><td>节点之间的连接关系</td><td>流程怎么跳转</td></tr>
+        <tr><td>Conditional Edge</td><td>带条件的边，根据结果决定下一跳</td><td>if/else 版的流程图</td></tr>
+        <tr><td>Checkpoint</td><td>每一步保存状态快照</td><td>Agent 自动存档</td></tr>
+        <tr><td>Human-in-the-loop</td><td>在流程中间暂停，让人介入</td><td>流程不是全自动死跑，可以中途插人</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ===== 2. ToolCall ===== -->
+  <section class="fade-in">
+    <div class="section-label">第 2 章</div>
+    <h2 class="section-title">ToolCall：从文本触及现实</h2>
+    <p class="section-sub">Agent 诞生的最开端——模型从输出字符串，到调用工具的蜕变</p>
+
+    <div class="aside-note">
+      <strong>核心本质：</strong>模型接受字符串，输出字符串。对 AI 所有能力的开发，都在这串字符串上。会调用工具的模型，就已经可以称为最基础的 Agent。
+    </div>
+
+    <p style="font-size:14px; color:var(--ink-dim); margin-bottom:8px;">最简单的 ToolCall 原理：</p>
+    <div class="code-block">get_weather:Beijing  →  解析函数名和参数  →  调用对应函数</div>
+
+    <p style="font-size:14px; color:var(--ink-dim); margin-bottom:8px;">实际流程三步走：</p>
+    <div class="mini-tl">
+      <div class="tl-item"><span class="tl-num">1.</span><div class="tl-body"><div class="tl-title">获取模型输出</div><div class="tl-desc">从 model.output 拿到字符串，按预定格式解析</div></div></div>
+      <div class="tl-item"><span class="tl-num">2.</span><div class="tl-body"><div class="tl-title">提取工具调用</div><div class="tl-desc">通过字符串提取，找到实际编写工具逻辑的函数</div></div></div>
+      <div class="tl-item"><span class="tl-num">3.</span><div class="tl-body"><div class="tl-title">执行并返回</div><div class="tl-desc">调用对应函数，将工具输出返回给模型</div></div></div>
+    </div>
+
+    <div class="insight">
+      <p>Chatbot → ToolCall 这一步，是 AI 从"被动对话"到"主动影响现实"的范式跃迁。有了它，AI 不再只是回答问题，而是能动手做事。</p>
+      <div class="attr">YC-Indis</div>
+    </div>
+  </section>
+
+  <!-- ===== 3. Agent Loop ===== -->
+  <section class="fade-in">
+    <div class="section-label">第 3 章</div>
+    <h2 class="section-title">Agent Loop：从做一步到做一件事</h2>
+    <p class="section-sub">Agent 的起点不是工具，而是"循环"</p>
+
+    <p style="font-size:14px; color:var(--ink-dim); line-height:1.7; margin-bottom:16px;">
+      单次 ToolCall 只能完成单一目标的简单任务。为了扩展 Agent 能力，引入 Agent Loop，让它能自动完成更复杂的任务。
+    </p>
+
+    <!-- ReAct -->
+    <h3 style="font-size:16px; font-weight:600; margin-bottom:8px;">🔄 ReAct — 摸着石头过河</h3>
+
+    <div class="react-diagram">
+      <span class="react-box box-think">Think</span>
+      <span class="react-arrow">⇄</span>
+      <span class="react-box box-act">Act</span>
+      <span class="react-arrow">→</span>
+      <span class="react-box box-end">End</span>
+    </div>
+
+    <p style="font-size:13px; color:var(--ink-dim); line-height:1.7; margin-bottom:12px;">
+      ReAct 是一个三节点循环：模型先思考 → 决定调什么工具 → 执行工具看结果 → 再决定下一步 → 直到结束。最关键的贡献是将大模型变成了一个 <strong>状态机</strong>，内部维护 Message State（消息列表），不断追加 Think 和 Act 的结果。
+    </p>
+
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>模式</th><th>核心思想</th><th>角色数</th><th>上下文压力</th><th>适用场景</th></tr></thead>
+      <tbody>
+        <tr><td>ReAct</td><td>走一步看一步，摸着石头过河</td><td>1 个</td><td>🔴 极高</td><td>简单单次工具调用、信息检索</td></tr>
+        <tr><td>Reflection</td><td>左脚踩右脚上天，自我挑刺修正</td><td>2 个（生成者+审查者）</td><td>🟡 中高</td><td>写代码、翻译、长文章</td></tr>
+        <tr><td>Plan-and-Execute</td><td>包工头与干饭机器，全局拆解按图索骥</td><td>2-3 个</td><td>🟢 较低</td><td>长程任务、数据分析、开发小游戏</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p style="font-size:14px; color:var(--ink-dim); line-height:1.7; margin-top:16px;">
+      <strong>Reflection</strong> 在 ReAct 里多加入一个 Critic 节点专门负责审查，防止单一 ReAct 的幻觉。
+    </p>
+    <p style="font-size:14px; color:var(--ink-dim); line-height:1.7;">
+      <strong>Plan-and-Execute</strong> 解决长任务中 ReAct 的"短视"和"遗忘"问题：<br>
+      Planner（规划者）写出详尽的 Task List → Executor（执行者）专心执行 → Replanner（复盘者）更新计划。
+    </p>
+
+    <div class="insight">
+      <p>三种模式的核心区别：ReAct 用一个模型既当爹又当妈（全部塞在一个上下文里）；Reflection 引入专门审查者互相制衡；Plan-and-Execute 把"想"和"做"彻底拆开，降低上下文压力。越复杂的任务，越需要拆分。</p>
+      <div class="attr">YC-Indis</div>
+    </div>
+  </section>
+
+  <!-- ===== 4. MultiAgent ===== -->
+  <section class="fade-in">
+    <div class="section-label">第 4 章</div>
+    <h2 class="section-title">MultiAgent：众人拾柴火焰高</h2>
+    <p class="section-sub">单 Agent 的能力是有极限的</p>
+
+    <p style="font-size:14px; color:var(--ink-dim); line-height:1.7; margin-bottom:12px;">
+      Plan-and-Execute 解决了"长任务拆解"问题，但 Executor 往往还是同一个大模型，既要会写前端又要会写后端，能力被摊薄。MultiAgent 将多个不同能力的专家集合进行分工，类似模型架构里的 <strong>MoE</strong>（混合专家）。
+    </p>
+
+    <div class="mini-tl">
+      <div class="tl-item">
+        <span class="tl-num">🔑</span>
+        <div class="tl-body">
+          <div class="tl-title">Router 规则清晰</div>
+          <div class="tl-desc">合理安排任务给对应专家</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <span class="tl-num">🔑</span>
+        <div class="tl-body">
+          <div class="tl-title">Expert 领域明确</div>
+          <div class="tl-desc">每个执行者负责的领域清晰、对应能力强</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="aside-note">
+      <strong>复杂度到这个层级，需要考虑的就是工程化的问题了。</strong>
+    </div>
+  </section>
+
+  <!-- ===== 5. Engineering ===== -->
+  <section class="fade-in">
+    <div class="section-label">第 5 章</div>
+    <h2 class="section-title">Engineering：真正成熟的关键一步</h2>
+    <p class="section-sub">Agent 从"能做"到"能可靠做"，中间差的是工程化</p>
+
+    <!-- 5.1 Context Engineer -->
+    <h3 style="font-size:16px; font-weight:600; margin-bottom:6px;">📖 Context Engineer</h3>
+    <p style="font-size:13px; color:var(--ink-dim); margin-bottom:12px;">
+      术语由 Shopify CEO Tobi Lutke 在 2025 年 6 月提出，被 Karpathy 转发，阅读量 210 万次。它比"提示词工程"更贴切地描述了<strong>向 LLM 提供全面背景信息</strong>的技能。
+    </p>
+
+    <div class="compare">
+      <div class="compare-card">
+        <h4>核心思想 — 四大操作</h4>
+        <ul>
+          <li><strong>写入（Write）</strong> — 把会话关键内容即时保存到上下文窗口之外，如 CLAUDE.md、PLANNING.md、记事板</li>
+          <li><strong>选择（Select）</strong> — 按需拉取最相关的内容到上下文，工具通过 RAG 挑选，记忆通过 embedding 检索</li>
+          <li><strong>压缩（Compress）</strong> — 上下文总结 + 剪裁，如 Claude Code 的 auto-compact 在达到 95% 窗口时自动总结</li>
+          <li><strong>隔离（Isolate）</strong> — 多 Agent 各自独立上下文窗口，沙箱环境隔离，状态对象隔离</li>
+        </ul>
+      </div>
+      <div class="compare-card">
+        <h4>工程方法 — 九种策略</h4>
+        <ul>
+          <li>Notepad / TODO 短期记忆</li>
+          <li>工程约束文件（CLAUDE.md 等）</li>
+          <li>压缩机制（优先丢可再取的）</li>
+          <li>动态工具选择（规则筛选+top-k）</li>
+          <li>动态 Prompt 组装（base+mode+domain+memory）</li>
+          <li>路径作用域规则</li>
+          <li>结构化输出全面化</li>
+          <li>分层记忆（rules / working memory / history）</li>
+          <li>Skills / references 按需加载</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- 5.2 Harness Engineer -->
+    <h3 style="font-size:16px; font-weight:600; margin-bottom:6px;">🎛️ Harness Engineer</h3>
+    <p style="font-size:13px; color:var(--ink-dim); margin-bottom:12px;">
+      如果说 Context Engineer 解决的是"模型此刻看到了什么"，那么 Harness Engineer 解决的就是"模型此刻在什么环境里工作、能做什么、怎么被约束、怎么恢复、怎么被观察"。
+    </p>
+
+    <div class="card-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="card-simple">
+        <span class="emoji">📦</span>
+        <div class="name">启动（Provision）</div>
+        <div class="desc">隔离工作区、沙箱环境、工具网关</div>
+      </div>
+      <div class="card-simple">
+        <span class="emoji">⛔</span>
+        <div class="name">控制（Gate）</div>
+        <div class="desc">Human Review、Guardrails、权限边界</div>
+      </div>
+      <div class="card-simple">
+        <span class="emoji">💾</span>
+        <div class="name">保存（Persist）</div>
+        <div class="desc">Checkpoint、Resume、Run State</div>
+      </div>
+      <div class="card-simple">
+        <span class="emoji">📡</span>
+        <div class="name">观测（Observe）</div>
+        <div class="desc">Tracing、Logs/Metrics、测试反馈</div>
+      </div>
+      <div class="card-simple">
+        <span class="emoji">🧱</span>
+        <div class="name">约束（Enforce）</div>
+        <div class="desc">AGENTS.md 路由、Linters、规则前置</div>
+      </div>
+      <div class="card-simple">
+        <span class="emoji">🧩</span>
+        <div class="name">隔离（Isolate）</div>
+        <div class="desc">Subagents、Worktree、State Isolation</div>
+      </div>
+    </div>
+
+    <div class="aside-note">
+      Context Engineer 的隔离 → 隔离"上下文噪声"<br>
+      Harness Engineer 的隔离 → 隔离"运行时副作用"
+    </div>
+
+    <div class="insight">
+      <p>Context Engineer 和 Harness Engineer 是一个问题的两面：一个管"信息环境"，一个管"运行环境"。两者缺一不可。Agent 到了生产阶段，不能只在 prompt 上下功夫，还要在运行时架构上做文章。</p>
+      <div class="attr">YC-Indis</div>
+    </div>
+  </section>
+
+  <!-- ===== 6. Skill ===== -->
+  <section class="fade-in">
+    <div class="section-label">第 6 章</div>
+    <h2 class="section-title">Skill：把能力变成可复用资产</h2>
+    <p class="section-sub">Skill = 面向 Agent 的可复用工作流包</p>
+
+    <p style="font-size:14px; color:var(--ink-dim); line-height:1.7; margin-bottom:12px;">
+      它不是单个工具，也不是完整 Agent，而是把一类任务的步骤、知识、脚本和检查点封装起来，供 Agent 在合适时机调用。通常是一个<strong>文件夹 + SKILL.md 清单 + 可选脚本/参考资料</strong>。
+    </p>
+
+    <div class="code-block">my-skill/
+├── SKILL.md
+├── scripts/
+│   └── run.py
+├── references/
+│   └── REFERENCE.md
+└── assets/
+    └── template.md</div>
+
+    <div class="aside-note">
+      <strong>工程化完善后，最终一定是产品化，触及非技术人员。</strong>
+    </div>
+  </section>
+
+  <!-- ===== 7. Claw & 产品化 ===== -->
+  <section class="fade-in">
+    <div class="section-label">第 7 章</div>
+    <h2 class="section-title">Claw：交互与产品化落地</h2>
+    <p class="section-sub">Agent 不再是工程师专属，产品化的时代来了</p>
+
+    <p style="font-size:14px; color:var(--ink-dim); line-height:1.7; margin-bottom:12px;">
+      2026 年，OpenClaw 爆火（361k stars，73.6k forks，GitHub Star 第一单体项目）。最大贡献是告诉所有人：Agent 时代早已不是程序员工程师的范围，在所有工程化的铺垫下，Agent 现在可以套上交互层，普及到普通用户。
+    </p>
+
+    <div class="insight">
+      <p>OpenClaw 的爆火揭示了一个趋势：未来 Agent 开发不能只盯着"能力"，还必须盯着"可用性"。谁把交互层做得更简单明了，谁就更接近真正的产品。</p>
+    </div>
+
+    <div class="pillar-grid">
+      <div class="pillar">
+        <span class="emoji">🧩</span>
+        <h4>产品思维</h4>
+        <p>技术能力决定了你能做什么，产品思维决定了你应该做什么</p>
+      </div>
+      <div class="pillar">
+        <span class="emoji">🎁</span>
+        <h4>学会包装</h4>
+        <p>同样的技术实现，不同的呈现方式带来截然不同的感受</p>
+      </div>
+      <div class="pillar">
+        <span class="emoji">🤝</span>
+        <h4>人的连接</h4>
+        <p>沟通、共情、理解需求——超脱于技术之外的核心价值</p>
+      </div>
+    </div>
+
+    <div class="insight">
+      <p>传统软件工程经验没有过时——测试驱动开发变成 Agent 自检机制，架构设计变成多 Agent 分工，错误处理变成兜底策略，版本管理变成 Prompt 版本化。不要因为 AI 的存在就放弃工程基础，恰恰相反，工程基础决定了你能不能把 AI 用好。</p>
+      <div class="attr">YC-Indis</div>
+    </div>
+  </section>
+
+  <!-- ===== 8. 附录工具 ===== -->
+  <section class="fade-in">
+    <div class="section-label">附录</div>
+    <h2 class="section-title">课程中提到的工具链</h2>
+    <p class="section-sub">课程涉及的 Python 工具和部署方式</p>
+
+    <div class="card-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="card-simple">
+        <span class="emoji">🐍</span>
+        <div class="name">Ollama</div>
+        <div class="desc">本地部署模型：ollama run qwen3.5:cloud</div>
+      </div>
+      <div class="card-simple">
+        <span class="emoji">⌨️</span>
+        <div class="name">Typer</div>
+        <div class="desc">Python CLI 框架，构建命令式工具</div>
+      </div>
+      <div class="card-simple">
+        <span class="emoji">📄</span>
+        <div class="name">Jinja2</div>
+        <div class="desc">模板渲染引擎，用于动态内容生成</div>
+      </div>
+      <div class="card-simple">
+        <span class="emoji">🖥️</span>
+        <div class="name">Textual</div>
+        <div class="desc">Python TUI 框架，构建终端界面应用</div>
+      </div>
+      <div class="card-simple">
+        <span class="emoji">🔗</span>
+        <div class="name">LangChain</div>
+        <div class="desc">LLM 应用组件工具箱</div>
+      </div>
+      <div class="card-simple">
+        <span class="emoji">🕸️</span>
+        <div class="name">LangGraph</div>
+        <div class="desc">Agent 流程编排框架</div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <p style="font-size:13px; color:var(--ink-muted); margin-bottom:8px;">推荐阅读资源：</p>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>资源</th><th>链接</th></tr></thead>
+      <tbody>
+        <tr><td>LangChain 快速开始</td><td style="font-family:var(--font-mono);font-size:12px;">docs.langchain.com/oss/python/langchain/quickstart</td></tr>
+        <tr><td>Claude Code 文档</td><td style="font-family:var(--font-mono);font-size:12px;">code.claude.com/docs/en/overview</td></tr>
+        <tr><td>Harness 101</td><td style="font-family:var(--font-mono);font-size:12px;">飞书文档：从 ReAct Loop 讲起</td></tr>
+        <tr><td>Agent Skills</td><td style="font-family:var(--font-mono);font-size:12px;">agentskills.io/what-are-skills</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ===== 9. 我的感悟 ===== -->
+  <section class="fade-in">
+    <div class="section-label">结语</div>
+    <h2 class="section-title">我的感悟</h2>
+    <p class="section-sub">学完课程后，我想清楚了几件事</p>
+
+    <div class="mini-tl">
+      <div class="tl-item">
+        <span class="tl-num">1.</span>
+        <div class="tl-body">
+          <div class="tl-title">AI 进化不是技术升级，是认知范式转变</div>
+          <div class="tl-desc">从 Chatbot → ToolCall → ReAct → MultiAgent → Claw，每一步都是对 AI 能力的重新理解</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <span class="tl-num">2.</span>
+        <div class="tl-body">
+          <div class="tl-title">两大工程是 AI 产品落地的支柱</div>
+          <div class="tl-desc">Context Engineer 管信息环境，Harness Engineer 管运行环境，缺一不可</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <span class="tl-num">3.</span>
+        <div class="tl-body">
+          <div class="tl-title">传统软件工程经验是核心竞争力</div>
+          <div class="tl-desc">测试、架构、错误处理、版本管理——这些经验在 Agent 时代不但没有过时，反而更加重要</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <span class="tl-num">4.</span>
+        <div class="tl-body">
+          <div class="tl-title">技术之外的产品思维才是护城河</div>
+          <div class="tl-desc">积极学习才能不落伍，但学的不只是技术，更是如何把技术转化为价值</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight">
+      <p>把学到的变成做出来的。明天开始做 Demo 产品。</p>
+      <div class="attr">YC-Indis · 2026.05.28</div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer-note">
+    <p>AI × Web3 School · Cohort 0</p>
+    <div class="sig">>_ 持续学习，持续输出</div>
+  </footer>
+
+</div>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
