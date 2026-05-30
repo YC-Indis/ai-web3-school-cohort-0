@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aily vs Manus — 两个AI"牛马"的产品对比拆解</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans SC', 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; padding: 2rem; color: #e2e8f0; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot { width: 12px; height: 12px; background: #22d3ee; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; }
+    h2 { font-size: 1.2rem; font-weight: 600; margin: 1.5rem 0 0.75rem 0; color: #22d3ee; }
+    h3 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.5rem 0; color: #34d399; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; margin-bottom: 0.25rem; }
+    .meta { color: #64748b; font-size: 0.75rem; margin-left: 1.75rem; }
+
+    .section { background: rgba(15, 23, 42, 0.5); border-radius: 1rem; border: 1px solid #1e293b; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .section-title { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+    .section-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .section-dot.cyan { background: #22d3ee; }
+    .section-dot.emerald { background: #34d399; }
+    .section-dot.amber { background: #fbbf24; }
+    .section-dot.rose { background: #fb7185; }
+    .section-dot.violet { background: #a78bfa; }
+
+    p { line-height: 1.8; margin-bottom: 0.75rem; font-size: 0.9rem; }
+    .highlight { color: #fbbf24; font-weight: 600; }
+    .insight { background: rgba(251, 191, 36, 0.1); border-left: 3px solid #fbbf24; padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 0.5rem 0.5rem 0; font-size: 0.85rem; }
+    .user-quote { background: rgba(34, 211, 238, 0.08); border-left: 3px solid #22d3ee; padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 0.5rem 0.5rem 0; font-size: 0.85rem; color: #22d3ee; }
+    .good { color: #34d399; }
+    .bad { color: #fb7185; }
+
+    ul { list-style: none; margin: 0.5rem 0 1rem 0; }
+    li { padding: 0.35rem 0; font-size: 0.9rem; line-height: 1.6; }
+    li::before { content: "• "; color: #64748b; }
+
+    /* Comparison table */
+    .compare-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
+    .compare-table th { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid #1e293b; color: #94a3b8; font-weight: 600; }
+    .compare-table td { padding: 0.6rem 0.8rem; border-bottom: 1px solid #1e293b; vertical-align: top; }
+    .compare-table .dim { color: #64748b; font-weight: 600; }
+    .compare-table .aily { color: #22d3ee; }
+    .compare-table .manus { color: #34d399; }
+
+    .verdict-box { background: rgba(52, 211, 153, 0.08); border: 1px solid #34d399; border-radius: 0.75rem; padding: 1.25rem; margin-top: 1rem; }
+
+    .footer { text-align: center; margin-top: 1.5rem; color: #475569; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>Aily vs Manus — 两个AI"牛马"的产品对比</h1>
+      </div>
+      <p class="subtitle">从亲身使用体验出发，拆解 AI Agent 的产品形态差异</p>
+      <p class="meta">YC-Indis · AI × Web3 School Cohort 0 · 2026-05-29</p>
+    </div>
+
+    <!-- 引子 -->
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot cyan"></div>
+        <h3>为什么拆它们俩</h3>
+      </div>
+
+      <p>飞书 Aily 是我自己用过的产品，用它写过 PRD，体验很深。Manus 是行业里讨论最多的通用 Agent。两者有一个共同特点：<span class="highlight">纯血牛马</span>。</p>
+
+      <div class="user-quote">
+        💬 "他们的体会都是纯血牛马，而且可以后台关上，到时候自动提示完成了，产出结果质量都还不错。"
+      </div>
+
+      <p>所谓"纯血牛马"，翻译成产品术语就是：<span class="highlight">异步 + 端到端 + 高产出质量</span>。用户不需要守在旁边、不需要写复杂的提示词、不需要反复调试——丢进去一个任务，回来拿结果。这个品类正在定义 AI Agent 的一个关键方向。</p>
+    </div>
+
+    <!-- 一句话理解 -->
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot amber"></div>
+        <h3>一句话理解两个产品</h3>
+      </div>
+
+      <table class="compare-table">
+        <tr>
+          <th></th>
+          <th>飞书 Aily</th>
+          <th>Manus</th>
+        </tr>
+        <tr>
+          <td class="dim">一句话</td>
+          <td class="aily"><strong>飞书里的数字员工</strong></td>
+          <td class="manus"><strong>全地形 AI 助理</strong></td>
+        </tr>
+        <tr>
+          <td class="dim">母公司</td>
+          <td>字节跳动（飞书团队）</td>
+          <td>Monica.im（蝴蝶效应）</td>
+        </tr>
+        <tr>
+          <td class="dim">发布</td>
+          <td>2024年11月（飞书未来无限大会）</td>
+          <td>2025年3月</td>
+        </tr>
+        <tr>
+          <td class="dim">定位</td>
+          <td>企业级 Agent，飞书生态的一环</td>
+          <td>个人通用 Agent，独立 Web 平台</td>
+        </tr>
+        <tr>
+          <td class="dim">定价</td>
+          <td>免费额度 + 企业订阅（不透明）</td>
+          <td>免费配额 + Pro $19.9-39.9/月（透明）</td>
+        </tr>
+        <tr>
+          <td class="dim">我用过吗</td>
+          <td class="good">✅ 写过 PRD，体验过</td>
+          <td class="bad">❌ 还没上手</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- 架构对比 -->
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot emerald"></div>
+        <h3>架构对比：两个 Agent 的设计差异</h3>
+      </div>
+
+      <p>两者的底层逻辑高度相似——都是 ReAct 循环（思考→行动→观察→再思考），都是多模型路由。但差异在于<span class="highlight">生态封闭度</span>和<span class="highlight">工具范围</span>：</p>
+
+      <table class="compare-table">
+        <tr>
+          <th>架构层</th>
+          <th>Aily</th>
+          <th>Manus</th>
+        </tr>
+        <tr>
+          <td class="dim">大脑</td>
+          <td>豆包大模型（字节自研），自动路由</td>
+          <td>Claude / GPT-4o / 自研模型混合路由</td>
+        </tr>
+        <tr>
+          <td class="dim">规划</td>
+          <td>任务自动分解，展示步骤列表</td>
+          <td>任务自动分解，展示步骤列表</td>
+        </tr>
+        <tr>
+          <td class="dim">工具</td>
+          <td>飞书全家桶（文档/表格/知识空间/消息）</td>
+          <td>浏览器沙箱 + 代码沙箱 + 文件 + API</td>
+        </tr>
+        <tr>
+          <td class="dim">执行环境</td>
+          <td>字节云端（飞书基础设施）</td>
+          <td>独立 Kubernetes 沙箱</td>
+        </tr>
+        <tr>
+          <td class="dim">记忆</td>
+          <td>飞书知识空间 + 短期上下文</td>
+          <td>SQLite + 向量库 + 短期上下文</td>
+        </tr>
+        <tr>
+          <td class="dim">异步</td>
+          <td>支持，结果推送到飞书消息</td>
+          <td>支持，结果网页通知</td>
+        </tr>
+        <tr>
+          <td class="dim">通知</td>
+          <td>飞书机器人推送（你在哪都能收到）</td>
+          <td>网页页面提示</td>
+        </tr>
+      </table>
+
+      <div class="insight">
+        💡 核心差异：Aily 的工具范围窄但深（飞书生态内），Manus 的工具范围广但浅（浏览器+代码）。对于企业用户来说，Aily 天然理解文档格式和业务逻辑；对于个人/开发者来说，Manus 能做所有事情但需要更多配置。
+      </div>
+    </div>
+
+    <!-- 实战对比：写 PRD -->
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot rose"></div>
+        <h3>实战场景：写一份 PRD</h3>
+      </div>
+
+      <p><span class="highlight">用 Aily 写 PRD 的实际体验（我的亲身经历）：</span></p>
+      <ul>
+        <li>不需要告诉它 PRD 应该包含哪些模块——它默认知道（产品背景、需求描述、功能清单、验收标准、排期建议）</li>
+        <li>输入一个简单的需求描述，Aily 会自动补全结构、填充细节</li>
+        <li>产出格式直接在飞书文档里，可以直接用，不需要手动排版</li>
+        <li>丢任务 → 去干别的 → 回来看结果，中间不需要任何干预</li>
+        <li>偶有模型飘逸（编造不存在的需求），但整体输出质量"很强"</li>
+      </ul>
+
+      <p><span class="highlight">如果换成 Manus 写 PRD，会怎样？</span></p>
+      <ul>
+        <li>Manus 也能写，但它没有一个"PRD 模板"的预设——它需要依赖模型本身对 PRD 结构的理解</li>
+        <li>输出可能是文本文档或 HTML，格式需要自己整理</li>
+        <li>它更擅长需要"动手"的任务（搜索资料、做数据、跑代码），写 PRD 这种纯文档反而没有 Aily 顺手</li>
+      </ul>
+
+      <div class="insight">
+        💡 Aily 在文档类任务上优势明显，因为它<strong>生长在飞书生态里</strong>。它对"怎么写一个飞书文档"的理解远超通用 Agent。这就是闭源生态的价值——<strong>不是技术更强，而是场景更适配</strong>。
+      </div>
+    </div>
+
+    <!-- 核心对比维度 -->
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot violet"></div>
+        <h3>六个核心对比维度</h3>
+      </div>
+
+      <p><span class="highlight">1. 异步体验</span></p>
+      <p>两者都支持异步，但 Aily 的通知链路更短——你在飞书里工作，结果直接推到你飞书消息里。Manus 需要你回到网页查看。在企业场景下，Aily 的"丢任务 → 去开会 → 回来收消息"体验更无缝。</p>
+
+      <p><span class="highlight">2. 产出质量</span></p>
+      <p>Aily 在中文企业文档场景下质量极高（豆包模型的强项），Manus 在多模型路由下灵活度高，但中文文档未必有 Aily 稳。我自己的体验也是 Aily 产出"不用怎么调试"。</p>
+
+      <p><span class="highlight">3. 工具范围</span></p>
+      <p>Aily 工具范围有限但深（飞书生态），Manus 范围广但浅（浏览器+代码）。这是一个经典的"深度 vs 广度"产品决策：Aily 选择做好一件事，Manus 选择能做所有事。</p>
+
+      <p><span class="highlight">4. 开放度</span></p>
+      <p>Manus 更开放——可以用 MCP 接入任意 API、自定义工具。Aily 基本是黑盒，用户没法配置它用什么模型、调什么参数。</p>
+
+      <p><span class="highlight">5. 稳定性</span></p>
+      <p>短期任务两者都不错。Aily 在长文档处理上偶有模型飘逸，Manus 在复杂多步任务上也有失败率。半斤八两。</p>
+
+      <p><span class="highlight">6. 用户门槛</span></p>
+      <p>Aily 在飞书里直接可用，对飞书用户零门槛。Manus 需要注册、理解 Agent 概念。Aily 门槛更低。</p>
+    </div>
+
+    <!-- 优劣总结 -->
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot amber"></div>
+        <h3>优势和局限</h3>
+      </div>
+
+      <p><span class="good">Aily 的优势</span></p>
+      <ul>
+        <li>飞书原生集成，文档/表格/消息一键打通</li>
+        <li>中文场景下 PRD 等文档产出质量极高</li>
+        <li>异步通知闭环比 Manus 好（飞书消息直达）</li>
+        <li>零门槛，不需要学习 Agent 概念</li>
+        <li>企业级安全管控（权限、审计、SSO）</li>
+      </ul>
+
+      <p><span class="bad">Aily 的局限</span></p>
+      <ul>
+        <li>强绑定飞书生态，离开飞书不能用</li>
+        <li>不能自定义模型参数，行为是黑盒</li>
+        <li>国际版飞书没有 Aily</li>
+        <li>定价不透明，和小企业不友好</li>
+      </ul>
+
+      <p><span class="good">Manus 的优势</span></p>
+      <ul>
+        <li>开放，能用浏览器+代码+API 做任何事</li>
+        <li>多模型路由，灵活选择成本和质量</li>
+        <li>独立平台，不绑定任何生态</li>
+        <li>适合开发者和高级用户</li>
+      </ul>
+
+      <p><span class="bad">Manus 的局限</span></p>
+      <ul>
+        <li>没有原生生态，每个工具需要自己发现</li>
+        <li>中文文档产出不如 Aily 贴切</li>
+        <li>排队时间长，免费配额有限</li>
+        <li>隐私风险（数据上传第三方云端）</li>
+      </ul>
+    </div>
+
+    <!-- AIPM 视角 -->
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot cyan"></div>
+        <h3>AIPM 视角：这个对比告诉我们什么</h3>
+      </div>
+
+      <p><span class="highlight">启示一：Agent 产品的壁垒不是技术，是生态。</span></p>
+      <p>Aily 在文档能力上未必比 Manus 的模型更强，但因为它长在飞书里、理解飞书文档格式、能直接读写飞书知识空间，它在企业场景下就比 Manus 好用。这是生态壁垒，不是技术壁垒。</p>
+
+      <p><span class="highlight">启示二：异步执行正在成为 Agent 的标配能力。</span></p>
+      <p>两个产品都押注异步——因为 Agent 的核心价值就是"替你干活，不用你守着"。谁把这个体验做得好（通知够及时、结果够完整、中间状态够透明），谁就赢。</p>
+
+      <p><span class="highlight">启示三：没有完美的 Agent，只有适配的场景。</span></p>
+      <p>Aily 不适合个人开发者，Manus 不适合企业文档场景。产品经理的工作不是找到"最好的 Agent"，而是判断<span class="highlight">什么场景用什么东西</span>——这就是你学习计划里模块2的选型框架。</p>
+
+      <p><span class="highlight">启示四："纯血牛马"是一个产品方向，不是一个噱头。</span></p>
+      <p>让 AI 真正"干活"而不是"聊天"，是当前 AI 产品的重要进化方向。用户对 Agent 的期待不是陪伴，是完成工作。能端到端交付成果的产品，才有持续价值。</p>
+    </div>
+
+    <!-- 最终结论 -->
+    <div class="verdict-box">
+      <h3 style="color:#34d399;margin-bottom:0.5rem;margin-top:0;">我的结论</h3>
+      <p style="margin-bottom:0;">
+        <span class="highlight">Aily</span> 是"飞书里的坐骑"——如果你在飞书生态内工作，Aily 就是当前最好用的 Agent。<br><br>
+        <span class="highlight">Manus</span> 是"全地形越野车"——如果你需要跨平台、跨工具完成复杂任务，Manus 更灵活。<br><br>
+        两者不是替代关系，是<span class="highlight">场景适配</span>的关系。作为 AIPM，理解这个差异比选边站队更重要。
+      </p>
+    </div>
+
+    <p class="footer">YC-Indis · AI × Web3 School Cohort 0 · 基于亲身 Aily 使用体验 + Manus 公开研究 · 2026-05-29</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manus 产品拆解 + Agent 认知框架</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans SC', 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; padding: 2rem; color: #e2e8f0; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot { width: 12px; height: 12px; background: #22d3ee; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; }
+    h2 { font-size: 1.2rem; font-weight: 600; margin: 1.5rem 0 0.75rem 0; color: #22d3ee; }
+    h3 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.5rem 0; color: #34d399; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; margin-bottom: 0.25rem; }
+    .meta { color: #64748b; font-size: 0.75rem; margin-left: 1.75rem; }
+
+    /* Diagram */
+    .diagram-container { background: rgba(15, 23, 42, 0.5); border-radius: 1rem; border: 1px solid #1e293b; padding: 1.5rem; overflow-x: auto; margin-bottom: 2rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+
+    /* Content sections */
+    .section { background: rgba(15, 23, 42, 0.5); border-radius: 1rem; border: 1px solid #1e293b; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .section-title { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+    .section-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .section-dot.cyan { background: #22d3ee; }
+    .section-dot.emerald { background: #34d399; }
+    .section-dot.violet { background: #a78bfa; }
+    .section-dot.amber { background: #fbbf24; }
+    .section-dot.rose { background: #fb7185; }
+
+    p { line-height: 1.8; margin-bottom: 0.75rem; font-size: 0.9rem; }
+    .highlight { color: #fbbf24; font-weight: 600; }
+    .insight { background: rgba(251, 191, 36, 0.1); border-left: 3px solid #fbbf24; padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 0.5rem 0.5rem 0; font-size: 0.85rem; }
+    .good { color: #34d399; }
+    .bad { color: #fb7185; }
+
+    ul { list-style: none; margin: 0.5rem 0 1rem 0; }
+    li { padding: 0.35rem 0; font-size: 0.9rem; line-height: 1.6; }
+    li::before { content: "→ "; color: #64748b; }
+
+    .tag { display: inline-block; background: rgba(34, 211, 238, 0.15); color: #22d3ee; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 999px; margin-right: 0.25rem; }
+
+    .footer { text-align: center; margin-top: 1.5rem; color: #475569; font-size: 0.75rem; }
+    hr { border: none; border-top: 1px solid #1e293b; margin: 1.5rem 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>Manus 产品深度拆解</h1>
+      </div>
+      <p class="subtitle">通用 AI Agent 的产品架构、认知框架与 AIPM 视角分析</p>
+      <p class="meta">YC-Indis · AI × Web3 School Cohort 0 · 2026-05-29</p>
+    </div>
+
+    <!-- Part 1: 《Agent是什么 & 什么时候该用/不该用》 -->
+    <h2>Part 1 · Agent 是什么 & 什么时候该用/不该用</h2>
+    <p class="subtitle" style="margin-left:0;margin-bottom:1rem;color:#64748b;">—— 写给非技术背景的产品经理</p>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot cyan"></div>
+        <h3>一、Agent 不是什么玄学，是 Chatbot 的进化版</h3>
+      </div>
+
+      <p>很多人第一次听到 AI Agent，觉得是个高大上的概念。但如果用一句话说清楚，就是：<span class="highlight">Chatbot 只能聊，Agent 能干。</span></p>
+
+      <p>ChatGPT、Kimi、Claude.ai 这一类是 Chatbot。你问它"帮我写一篇周报"，它给你一篇文字。但你需要手动复制、粘贴到其他工具、自己配图、自己发邮件。</p>
+
+      <p>Manus、Devin 这一类是 Agent。你对它说"帮我做一份竞品分析，整理成 PPT 发我邮箱"，它自己会：搜索网页 → 整理数据 → 做图表 → 生成 PPT → 发邮件。全程不需要你管。</p>
+
+      <p>区别的核心只有三个字：<span class="highlight">主动权</span>。Chatbot 等人喂。Agent 自己动手。</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot emerald"></div>
+        <h3>二、Agent 的三个器官：大脑、手脚、记忆</h3>
+      </div>
+
+      <p>一个成熟的 AI Agent，有三个必备组成部分：</p>
+
+      <ul>
+        <li><span class="highlight">大脑（LLM）</span> — 思考和规划。比如"用户要做竞品分析"→ 拆成：搜资料、读文章、整理表格、画图表、写结论。</li>
+        <li><span class="highlight">手脚（Tool Use）</span> — 执行行动。浏览器搜索、Python 计算、读写文件、调 API。没有手脚，Agent 就是个思想者。</li>
+        <li><span class="highlight">记忆（Memory）</span> — 上下文感知。短期记忆（当前对话）让 Agent 知道你在说什么；长期记忆（向量库/文件）让 Agent 记住你的偏好和历史。</li>
+      </ul>
+
+      <div class="insight">
+        💡 Agent 的工作循环（ReAct 范式）：<br>
+        <strong>思考 (Thought)</strong> → <strong>行动 (Action)</strong> → <strong>观察 (Observation)</strong> → <strong>再思考</strong> → <strong>再行动</strong> → …… → <strong>完成</strong><br>
+        每轮循环就是一次"想→做→看结果→再想"的过程，直到任务完成。
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot amber"></div>
+        <h3>三、什么时候该用 Agent？</h3>
+      </div>
+
+      <p><span class="good">✅ 适合用 Agent 的场景：</span></p>
+      <ul>
+        <li><strong>多步骤但明确的任务</strong> — 比如"调研 5 个竞品，生成对比表"。每个步骤（搜索→提取→整理）是确定的，但需要组合执行。</li>
+        <li><strong>需要调用多种工具</strong> — 搜索 + 代码 + 文件操作，人在中间切换工具很烦，Agent 可以无缝衔接。</li>
+        <li><strong>容忍异步等待</strong> — Agent 跑一个复杂任务可能需要 5-30 分钟。如果你能先丢任务、后收结果，Agent 很适合。</li>
+        <li><strong>重复性工作</strong> — 每天/每周都要做的固定流程（日报生成、简历初筛、数据报表），用 Agent 自动化最划算。</li>
+      </ul>
+
+      <p><span class="bad">❌ 不该用 Agent 的场景：</span></p>
+      <ul>
+        <li><strong>单步就能完成的</strong> — 问"今天天气怎么样"用 Chatbot 就够了，不需要 Agent。</li>
+        <li><strong>需要精确控制的</strong> — 每一步都要人工审批、调整参数，用 Workflow（流程自动化）比 Agent 更适合。Agent 会自作主张。</li>
+        <li><strong>实时交互的</strong> — 用户在聊天框里等回复，Agent 跑 5 分钟会让人抓狂。这种情况应该用 Copilot 模式（人+AI 实时协作）。</li>
+        <li><strong>成本敏感且高并发的</strong> — Agent 每个步骤都调 LLM，成本是 Chatbot 的 5-10 倍。量大的场景要算清楚账。</li>
+        <li><strong>确定性要求极高的</strong> — 法律文书、医疗诊断等场景。Agent 的每步都有概率出错，5 步后准确率可能跌到 60%。人必须全程盯着。</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot violet"></div>
+        <h3>四、Agent × Chatbot × Workflow × Copilot 的判断矩阵</h3>
+      </div>
+
+      <p>这是 AIPM 最基础的选型判断工具（来自模块2的框架）：</p>
+
+      <ul>
+        <li><span class="highlight">任务确定性高 + 步骤单 → Chatbot</span>（一问一答）</li>
+        <li><span class="highlight">任务确定性高 + 步骤多 → Workflow</span>（预定义流程）</li>
+        <li><span class="highlight">任务确定性低 + 用户需要实时介入 → Copilot</span>（人机协作）</li>
+        <li><span class="highlight">任务确定性低 + 可异步等待 → Agent</span>（自主执行）</li>
+      </ul>
+
+      <p>Manus 处于"任务确定性低 + 可异步等待"这个象限。你把一个模糊的目标（"帮我研究一下这个行业"）丢给它，它自己去拆解、执行、交付。</p>
+    </div>
+
+    <hr>
+
+    <!-- Part 2: Manus 产品拆解 -->
+    <h2>Part 2 · Manus 产品深度拆解</h2>
+
+    <!-- Architecture Diagram -->
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot cyan"></div>
+        <h3>产品架构图</h3>
+      </div>
+      <p style="color:#94a3b8;font-size:0.8rem;margin-bottom:1rem;">基于公开信息与社区分析的 Manus 系统架构推测</p>
+
+      <div class="diagram-container">
+        <svg viewBox="0 0 1000 720">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+            </marker>
+            <marker id="arrow-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#34d399" />
+            </marker>
+            <marker id="arrow-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee" />
+            </marker>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+
+          <rect width="100%" height="100%" fill="url(#grid)" />
+
+          <!-- ===== TITLE ===== -->
+          <text x="500" y="30" fill="white" font-size="14" font-weight="700" text-anchor="middle" font-family="JetBrains Mono, monospace">Manus Architecture</text>
+
+          <!-- ===== Sandbox Boundary ===== -->
+          <rect x="20" y="50" width="960" height="650" rx="12" fill="rgba(251, 191, 36, 0.04)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="8,4" />
+          <text x="32" y="66" fill="#fbbf24" font-size="9" font-weight="600">云端沙箱 (Kubernetes) — 每个用户独立容器</text>
+
+          <!-- ===== LAYER 1: USER INPUT (top) ===== -->
+          <rect x="370" y="80" width="260" height="55" rx="8" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5" />
+          <image href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2322d3ee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'/%3E%3C/svg%3E" x="385" y="92" width="18" height="18" />
+          <text x="420" y="103" fill="white" font-size="11" font-weight="600">用户输入</text>
+          <text x="420" y="120" fill="#94a3b8" font-size="9">文本 / 文件 / 链接</text>
+
+          <!-- Arrow: Input → Gateway -->
+          <line x1="500" y1="135" x2="500" y2="165" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+
+          <!-- ===== LAYER 2: GATEWAY ===== -->
+          <rect x="370" y="170" width="260" height="55" rx="8" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1.5" />
+          <text x="500" y="190" fill="white" font-size="11" font-weight="600" text-anchor="middle">API Gateway & 任务队列</text>
+          <text x="500" y="208" fill="#94a3b8" font-size="9" text-anchor="middle">认证 · 排队 · WebSocket 实时流</text>
+
+          <!-- Arrow: Gateway → Orchestrator -->
+          <line x1="500" y1="225" x2="500" y2="265" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+          <!-- ===== LAYER 3: ORCHESTRATOR ===== -->
+          <rect x="170" y="270" width="660" height="65" rx="8" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="2" />
+          <text x="500" y="293" fill="white" font-size="12" font-weight="600" text-anchor="middle">🧠 主协调器 (Orchestrator / Planner)</text>
+          <text x="500" y="310" fill="#94a3b8" font-size="9" text-anchor="middle">ReAct 循环 · 任务分解 · 步骤编排 · 动态调整 · 结果合并</text>
+          <text x="500" y="324" fill="#64748b" font-size="8" text-anchor="middle">Plan → Execute → Reflect → Re-plan 循环</text>
+
+          <!-- Arrow: Orchestrator → Workers -->
+          <line x1="280" y1="335" x2="280" y2="375" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+          <line x1="420" y1="335" x2="420" y2="375" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+          <line x1="580" y1="335" x2="580" y2="375" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+          <line x1="720" y1="335" x2="720" y2="375" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+
+          <!-- ===== LAYER 4: WORKER POOL ===== -->
+          <text x="32" y="365" fill="#94a3b8" font-size="9">Worker Pool（并行子代理）</text>
+
+          <!-- Browser Agent -->
+          <rect x="200" y="380" width="160" height="65" rx="8" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5" />
+          <text x="280" y="400" fill="white" font-size="10" font-weight="600" text-anchor="middle">🌐 Browser Agent</text>
+          <text x="280" y="417" fill="#94a3b8" font-size="8" text-anchor="middle">Chromium 沙箱 · 截图</text>
+          <text x="280" y="431" fill="#94a3b8" font-size="8" text-anchor="middle">点击 · 表单填写</text>
+
+          <!-- Code Agent -->
+          <rect x="340" y="380" width="160" height="65" rx="8" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5" />
+          <text x="420" y="400" fill="white" font-size="10" font-weight="600" text-anchor="middle">⚡ Code Agent</text>
+          <text x="420" y="417" fill="#94a3b8" font-size="8" text-anchor="middle">Python / Node.js / Bash</text>
+          <text x="420" y="431" fill="#94a3b8" font-size="8" text-anchor="middle">执行 · 数据分析</text>
+
+          <!-- File Agent -->
+          <rect x="500" y="380" width="160" height="65" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5" />
+          <text x="580" y="400" fill="white" font-size="10" font-weight="600" text-anchor="middle">📁 File Agent</text>
+          <text x="580" y="417" fill="#94a3b8" font-size="8" text-anchor="middle">读写 · 格式转换</text>
+          <text x="580" y="431" fill="#94a3b8" font-size="8" text-anchor="middle">Excel/PPT/PDF</text>
+
+          <!-- MCP Agent -->
+          <rect x="660" y="380" width="160" height="65" rx="8" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1.5" />
+          <text x="740" y="400" fill="white" font-size="10" font-weight="600" text-anchor="middle">🔌 MCP Server</text>
+          <text x="740" y="417" fill="#94a3b8" font-size="8" text-anchor="middle">第三方 API</text>
+          <text x="740" y="431" fill="#94a3b8" font-size="8" text-anchor="middle">自定义工具扩展</text>
+
+          <!-- Feedback arrows: Workers → Orchestrator -->
+          <path d="M 280 445 L 280 460 Q 280 470 290 470 L 490 470 Q 500 470 500 460 L 500 445" fill="none" stroke="#34d399" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arrow)"/>
+          <path d="M 720 445 L 720 460 Q 720 470 710 470 L 510 470 Q 500 470 500 460 L 500 445" fill="none" stroke="#34d399" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arrow)"/>
+          <text x="500" y="466" fill="#64748b" font-size="7" text-anchor="middle">← 反馈循环 (观察结果 → 再规划) →</text>
+
+          <!-- ===== LAYER 5: LLM Backend (side) ===== -->
+          <text x="32" y="485" fill="#94a3b8" font-size="9">LLM 后端（多模型混合）</text>
+          <rect x="170" y="495" width="340" height="55" rx="8" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1.5" />
+          <text x="340" y="516" fill="white" font-size="10" font-weight="600" text-anchor="middle">🧩 多模型路由</text>
+          <text x="340" y="534" fill="#94a3b8" font-size="8" text-anchor="middle">Claude · GPT-4o · 自研模型 · 按任务类型切换</text>
+
+          <!-- Arrow: LLM ↔ Orchestrator -->
+          <line x1="340" y1="495" x2="340" y2="445" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,3" />
+          <line x1="340" y1="445" x2="340" y2="495" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arrow)"/>
+
+          <!-- ===== LAYER 6: STORAGE ===== -->
+          <text x="32" y="585" fill="#94a3b8" font-size="9">存储层</text>
+          <rect x="170" y="595" width="160" height="55" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5" />
+          <text x="250" y="616" fill="white" font-size="10" font-weight="600" text-anchor="middle">短期记忆</text>
+          <text x="250" y="634" fill="#94a3b8" font-size="8" text-anchor="middle">对话上下文窗口</text>
+
+          <rect x="350" y="595" width="160" height="55" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5" />
+          <text x="430" y="616" fill="white" font-size="10" font-weight="600" text-anchor="middle">长期记忆</text>
+          <text x="430" y="634" fill="#94a3b8" font-size="8" text-anchor="middle">SQLite · 向量数据库</text>
+
+          <rect x="530" y="595" width="160" height="55" rx="8" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1.5" />
+          <text x="610" y="616" fill="white" font-size="10" font-weight="600" text-anchor="middle">文件存储</text>
+          <text x="610" y="634" fill="#94a3b8" font-size="8" text-anchor="middle">结果输出 · 中间文件</text>
+
+          <!-- Arrows from workers to storage -->
+          <line x1="280" y1="445" x2="250" y2="593" stroke="#a78bfa" stroke-width="1" stroke-dasharray="3,3" />
+          <line x1="420" y1="445" x2="430" y2="593" stroke="#a78bfa" stroke-width="1" stroke-dasharray="3,3" />
+
+          <!-- ===== OUTPUT ===== -->
+          <rect x="370" y="670" width="260" height="40" rx="8" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5" />
+          <text x="500" y="690" fill="white" font-size="11" font-weight="600" text-anchor="middle">✅ 最终交付物</text>
+          <text x="500" y="702" fill="#94a3b8" font-size="8" text-anchor="middle">报告 · PPT · 代码 · 文件</text>
+
+          <line x1="430" y1="650" x2="500" y2="668" stroke="#22d3ee" stroke-width="1" />
+          <line x1="610" y1="650" x2="500" y2="668" stroke="#22d3ee" stroke-width="1" />
+
+          <!-- ===== LEGEND ===== -->
+          <text x="760" y="510" fill="white" font-size="9" font-weight="600">图例</text>
+          <rect x="760" y="518" width="14" height="8" rx="2" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1"/> <text x="778" y="525" fill="#94a3b8" font-size="7">用户交互层</text>
+          <rect x="760" y="532" width="14" height="8" rx="2" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1"/> <text x="778" y="539" fill="#94a3b8" font-size="7">编排/执行层</text>
+          <rect x="760" y="546" width="14" height="8" rx="2" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1"/> <text x="778" y="553" fill="#94a3b8" font-size="7">基础设施</text>
+          <rect x="760" y="560" width="14" height="8" rx="2" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1"/> <text x="778" y="567" fill="#94a3b8" font-size="7">存储/数据</text>
+          <rect x="760" y="574" width="14" height="8" rx="2" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1"/> <text x="778" y="581" fill="#94a3b8" font-size="7">扩展协议</text>
+          <line x1="760" y1="590" x2="774" y2="590" stroke="#34d399" stroke-width="1" stroke-dasharray="3,3"/> <text x="778" y="593" fill="#94a3b8" font-size="7">反馈循环</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Product Analysis -->
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot emerald"></div>
+        <h3>产品基本信息</h3>
+      </div>
+      <ul>
+        <li><span class="highlight">产品名</span> Manus</li>
+        <li><span class="highlight">公司</span> Monica.im（蝴蝶效应），创始人肖弘（Peak）</li>
+        <li><span class="highlight">发布时间</span> 2025年3月6日正式面向全球开放</li>
+        <li><span class="highlight">定位</span> 通用 AI Agent — 「首个通用AI助手」</li>
+        <li><span class="highlight">定价</span> 当前免费有配额（每日限任务数），Pro 版本传闻 $19.9-39.9/月</li>
+        <li><span class="highlight">运行模式</span> Web 端提交任务 → 云端后台异步执行 → 实时流式输出过程 → 交付成品</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot cyan"></div>
+        <h3>核心能力拆解</h3>
+      </div>
+
+      <p><span class="highlight">1. 任务规划（Planning）</span></p>
+      <p>用户输入一个模糊目标（"分析特斯拉2026年Q1财报"），Manus 自动拆解为子任务：搜索财报原文 → 提取关键指标 → 计算同比变化 → 分析市场反应 → 整理成报告 → 生成图表。每一步都在规划列表中展示，用户可以看到它在做什么。</p>
+
+      <p><span class="highlight">2. 多工具执行（Tool Use）</span></p>
+      <p>Manus 能并行使用多个工具：浏览器（Chromium 沙箱）做网页搜索和信息提取；代码沙箱（Python/Node.js）做数据计算和分析；文件系统做读写、格式转换（Excel/PPT/PDF）；MCP 协议对接第三方 API。</p>
+
+      <p><span class="highlight">3. 多模型混合</span></p>
+      <p>不绑定单一 LLM。简单任务用小模型（便宜快速），复杂推理用大模型（Claude、GPT-4o），在不同的子任务间根据特性切换模型，降低成本同时保证质量。</p>
+
+      <p><span class="highlight">4. 云端异步执行</span></p>
+      <p>任务提交后用户可以关闭浏览器离开，完成后通过通知或下次登录查看结果。每次任务最长 30 分钟。</p>
+
+      <p><span class="highlight">5. 结果交付</span></p>
+      <p>不是"给你一段文字"，而是直接生成可交付的成品：HTML 报告、Excel 表格、PPT 演示稿、PDF 文件。产出感强。</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot amber"></div>
+        <h3>竞品对比（AIPM 视角）</h3>
+      </div>
+
+      <ul>
+        <li><span class="highlight">Manus vs Devin</span> — Devin 专注编程，深度更好但泛用性差（$500/月）。Manus 更通用，价格更低（目前免费），但编程深度不如。定位差异：Devin 是"AI 工程师"，Manus 是"AI 助理"。</li>
+        <li><span class="highlight">Manus vs Claude Code</span> — Claude Code 是终端内实时协作的编程 Agent（你敲命令它干活），人机交互更紧密。Manus 是后台异步执行，全自动化。一个适合开发者日常工作，一个适合一次性复杂任务。</li>
+        <li><span class="highlight">Manus vs 扣子空间/扣子</span> — 扣子是 Agent 搭建平台（让你自己搭 Agent），Manus 是成品 Agent（直接用）。一个是工具平台，一个是最终产品。</li>
+        <li><span class="highlight">Manus vs ChatGPT Tasks</span> — ChatGPT Tasks 是轻量级定时任务，Manus 是重量级自主 Agent。复杂度不在一个量级。</li>
+      </ul>
+
+      <div class="insight">
+        💡 AIPM 视角的关键思考：Manus 的产品定位是"让 AI 从助手变成员工"。它的核心价值不是技术多强，而是<strong>降低了使用 Agent 的门槛</strong>——用户不需要了解 Prompt、不需要配置工具链，像用 ChatGPT 一样说一句话，就获得了一份成品。
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot rose"></div>
+        <h3>已知问题与风险</h3>
+      </div>
+      <ul>
+        <li><span class="bad">成本高</span> — 每次任务约 $0.5-2 的推理成本，免费模式难持续。</li>
+        <li><span class="bad">排队时间长</span> — 高峰期需等数小时。</li>
+        <li><span class="bad">任务失败率</span> — 部分复杂任务中途失败，缺乏自动重试机制。</li>
+        <li><span class="bad">隐私风险</span> — 数据上传云端沙箱，不适合敏感信息场景。</li>
+        <li><span class="bad">不可重复性</span> — 相同输入可能不同输出，难以调试。</li>
+        <li><span class="bad">"套壳"争议</span> — 被质疑只是封装了其他模型和工具，技术壁垒不强。</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot violet"></div>
+        <h3>AIPM 视角的总结思考</h3>
+      </div>
+
+      <p>Manus 是一个<strong>教科书级的 Agent 产品案例</strong>，原因如下：</p>
+
+      <ul>
+        <li>它完整展示了 Agent 的 <span class="highlight">ReAct 范式</span>（思考→行动→观察→再思考）在实际产品中的落地</li>
+        <li>它的 <span class="highlight">用户价值很清晰</span>："说一句话，拿到成品"——这个价值主张在面试里能一句话讲清楚</li>
+        <li>它的 <span class="highlight">商业模式困境</span>（成本高、难盈利）是整个 AI Agent 行业的缩影，适合用来讨论"AI 产品为什么难赚钱"</li>
+        <li>它的 <span class="highlight">"套壳"争议</span> 引发了一个好问题：AI 产品的壁垒到底是什么？是模型能力、数据飞轮、用户习惯，还是生态绑定？</li>
+      </ul>
+
+      <div class="insight">
+        💡 如果面试官问"你怎么看待 Manus"，一个能加分的回答结构：<br>
+        ① 先说产品定位（通用 Agent，降低使用门槛）<br>
+        ② 再说核心设计亮点（多模型路由、异步执行、成品交付）<br>
+        ③ 然后说问题（成本、隐私、不可重复性）<br>
+        ④ 最后给建议（付费模式优化、私有化部署、企业版场景聚焦）<br>
+        —— 这就是 AIPM 的思考方式：从产品到商业，再到改进方向。
+      </div>
+    </div>
+
+    <p class="footer">YC-Indis · AI × Web3 School Cohort 0 · 使用 Hermes Agent + DeepSeek v4 Flash 生成</p>
+  </div>
+</body>
+</html>

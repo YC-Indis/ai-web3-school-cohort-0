@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>沉浸英语 · 场景广场</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans SC', sans-serif; background: #0a0a1a; min-height: 100vh; color: #e2e8f0; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+
+    /* Header */
+    .header { text-align: center; margin-bottom: 2.5rem; }
+    .logo { font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #22d3ee, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .logo span { font-weight: 400; font-size: 0.9rem; background: none; -webkit-text-fill-color: #64748b; }
+    .tagline { color: #94a3b8; font-size: 0.9rem; margin-top: 0.5rem; }
+
+    /* Scene Grid */
+    .scene-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.2rem; }
+
+    .scene-card {
+      background: rgba(15, 23, 42, 0.6); border: 1px solid #1e293b; border-radius: 1rem;
+      overflow: hidden; cursor: pointer; transition: all 0.3s ease;
+    }
+    .scene-card:hover { border-color: #22d3ee; transform: translateY(-3px); box-shadow: 0 8px 25px rgba(34,211,238,0.1); }
+
+    .card-cover {
+      height: 130px; position: relative; display: flex; align-items: flex-end; padding: 1rem;
+    }
+    .card-cover.friends { background: linear-gradient(135deg, #1a1a3e, #2d1b69); }
+    .card-cover.office { background: linear-gradient(135deg, #1a3a2a, #0d4f3c); }
+    .card-cover.monkey { background: linear-gradient(135deg, #3e1a1a, #692b1b); }
+    .card-cover.romance { background: linear-gradient(135deg, #3e1a3e, #691b4f); }
+    .card-cover.ship { background: linear-gradient(135deg, #1a2a3e, #1b3d69); }
+    .card-cover.game { background: linear-gradient(135deg, #2a1a3e, #3d1b69); }
+
+    .scene-badge {
+      display: inline-block; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+      padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.7rem; color: #22d3ee; font-weight: 500;
+    }
+
+    .card-body { padding: 1rem 1rem 1.2rem; }
+
+    .scene-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .scene-desc { font-size: 0.8rem; color: #94a3b8; line-height: 1.6; margin-bottom: 0.6rem; }
+
+    .char-list { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+    .char-avatar {
+      width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 600; color: white;
+    }
+    .char-avatar.r { background: #e8a84c; }
+    .char-avatar.m { background: #6b8cae; }
+    .char-avatar.ro { background: #8b4513; }
+    .char-avatar.j { background: #2e8b57; }
+    .char-avatar.d { background: #4a6fa5; }
+    .char-avatar.p { background: #c97b84; }
+    .char-avatar.w { background: #d4a574; }
+    .char-avatar.s { background: #cd5c5c; }
+    .char-avatar.z { background: #f0c040; }
+    .char-avatar.g { background: #6b8e23; }
+    .char-avatar.ka { background: #9370db; }
+    .char-avatar.l { background: #20b2aa; }
+    .char-avatar.v { background: #ff69b4; }
+    .char-avatar.unk { background: #708090; }
+    .char-avatar.san { background: #a0522d; }
+
+    .card-footer { display: flex; justify-content: space-between; align-items: center; }
+    .card-tag { font-size: 0.7rem; color: #64748b; }
+    .card-price { font-size: 0.8rem; color: #fbbf24; font-weight: 600; }
+
+    .demo-btn {
+      display: block; width: 220px; margin: 2.5rem auto 0; padding: 0.8rem 0;
+      background: linear-gradient(135deg, #22d3ee, #a78bfa); border: none; border-radius: 999px;
+      color: white; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.3s;
+      text-align: center;
+    }
+    .demo-btn:hover { transform: scale(1.02); box-shadow: 0 4px 20px rgba(34,211,238,0.3); }
+
+    .footer { text-align: center; margin-top: 2rem; color: #475569; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">沉浸英语 · SceneTalk</div>
+      <p class="tagline">选一个场景，和角色们一起聊英语</p>
+    </div>
+
+    <div class="scene-grid">
+      <!-- 老友记 -->
+      <div class="scene-card">
+        <div class="card-cover friends">
+          <span class="scene-badge">🎬 美剧 · 日常</span>
+        </div>
+        <div class="card-body">
+          <div class="scene-title">Central Perk 咖啡馆</div>
+          <div class="scene-desc">你是 Monica 的大学同学，来纽约找她叙旧。和这群老朋友一起聊八卦、抱怨工作、计划周末。</div>
+          <div class="char-list">
+            <div class="char-avatar r">Ra</div>
+            <div class="char-avatar m">Mo</div>
+            <div class="char-avatar ro">Ro</div>
+            <div class="char-avatar j">Jo</div>
+            <div class="char-avatar d">Ch</div>
+            <div class="char-avatar p">Ph</div>
+            <div style="font-size:0.7rem;color:#64748b;line-height:28px;">+你</div>
+          </div>
+          <div class="card-footer">
+            <span class="card-tag">6角色 · 中级</span>
+            <span class="card-price">免费试玩</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 办公室 -->
+      <div class="scene-card">
+        <div class="card-cover office">
+          <span class="scene-badge">💼 职场 · 幽默</span>
+        </div>
+        <div class="card-body">
+          <div class="scene-title">Dunder Mifflin 办公室</div>
+          <div class="scene-desc">你是新来的实习生。Michael 在开没分寸的玩笑，Dwight 在炫耀他的 beet farm，你只想熬过今天。</div>
+          <div class="char-list">
+            <div class="char-avatar m">Mi</div>
+            <div class="char-avatar d">Dw</div>
+            <div class="char-avatar j">Ji</div>
+            <div class="char-avatar p">Pa</div>
+            <div style="font-size:0.7rem;color:#64748b;line-height:28px;">+你</div>
+          </div>
+          <div class="card-footer">
+            <span class="card-tag">5角色 · 中高级</span>
+            <span class="card-price">免费试玩</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 恋爱场景 -->
+      <div class="scene-card">
+        <div class="card-cover romance">
+          <span class="scene-badge">💕 恋爱 · 日常</span>
+        </div>
+        <div class="card-body">
+          <div class="scene-title">第一次约会</div>
+          <div class="scene-desc">朋友给你安排了一个相亲局。你提前到了咖啡厅，对方推门进来——怎么样开场才不会尴尬？</div>
+          <div class="char-list">
+            <div class="char-avatar v">You</div>
+            <div class="char-avatar l">Li</div>
+            <div style="font-size:0.7rem;color:#64748b;line-height:28px;">+服务生角色时不时插话</div>
+          </div>
+          <div class="card-footer">
+            <span class="card-tag">2+人 · 初级</span>
+            <span class="card-price">免费试玩</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 西游记 -->
+      <div class="scene-card">
+        <div class="card-cover monkey">
+          <span class="scene-badge">📖 中国故事 · 英语</span>
+        </div>
+        <div class="card-body">
+          <div class="scene-title">西天取经 · 英文版</div>
+          <div class="scene-desc">唐三藏新收了一个徒弟（你）。一路上孙悟空和猪八戒不停斗嘴，你一边赶路一边练英语。</div>
+          <div class="char-list">
+            <div class="char-avatar w">Wu</div>
+            <div class="char-avatar z">Zh</div>
+            <div class="char-avatar s">Sa</div>
+            <div class="char-avatar ka">Ka</div>
+            <div style="font-size:0.7rem;color:#64748b;line-height:28px;">+你</div>
+          </div>
+          <div class="card-footer">
+            <span class="card-tag">4角色 · 中级</span>
+            <span class="card-price">免费试玩</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 三体 -->
+      <div class="scene-card">
+        <div class="card-cover ship">
+          <span class="scene-badge">🚀 科幻 · 学术</span>
+        </div>
+        <div class="card-body">
+          <div class="scene-title">三体 · 舰队对话</div>
+          <div class="scene-desc">你是一名联合国译员，被派去和三体舰队谈判。探测器在你面前展开二维化——你只能用英语沟通。</div>
+          <div class="char-list">
+            <div class="char-avatar s">Sh</div>
+            <div class="char-avatar l">Lu</div>
+            <div class="char-avatar unk">??</div>
+            <div style="font-size:0.7rem;color:#64748b;line-height:28px;">+你</div>
+          </div>
+          <div class="card-footer">
+            <span class="card-tag">3角色 · 高级</span>
+            <span class="card-price">免费试玩</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 游戏酒馆 -->
+      <div class="scene-card">
+        <div class="card-cover game">
+          <span class="scene-badge">🎮 游戏 · 即兴</span>
+        </div>
+        <div class="card-body">
+          <div class="scene-title">酒馆偶遇</div>
+          <div class="scene-desc">你在边境星球的一家酒馆里歇脚。旁边桌的冒险者在讨论一个赏金任务——你竖起耳朵听，决定要不要搭话。</div>
+          <div class="char-list">
+            <div class="char-avatar g">Gn</div>
+            <div class="char-avatar ka">Ka</div>
+            <div class="char-avatar d">Dr</div>
+            <div style="font-size:0.7rem;color:#64748b;line-height:28px;">+你</div>
+          </div>
+          <div class="card-footer">
+            <span class="card-tag">3角色 · 中级</span>
+            <span class="card-price">免费试玩</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-btn">🎤 随机进入一个场景</div>
+
+    <div class="footer">
+      SceneTalk MVP Prototype · YC-Indis · 2026-05-30
+    </div>
+  </div>
+</body>
+</html>

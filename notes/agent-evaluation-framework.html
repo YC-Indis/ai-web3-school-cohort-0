@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Agent 产品评测框架 + Aily 深度案例分析</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans SC', 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; padding: 2rem; color: #e2e8f0; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot { width: 12px; height: 12px; background: #22d3ee; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; }
+    h2 { font-size: 1.2rem; font-weight: 600; margin: 1.5rem 0 0.75rem 0; color: #22d3ee; }
+    h3 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.5rem 0; color: #34d399; }
+    h4 { font-size: 0.9rem; font-weight: 600; margin: 1rem 0 0.4rem 0; color: #fbbf24; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; }
+
+    .section { background: rgba(15, 23, 42, 0.5); border-radius: 1rem; border: 1px solid #1e293b; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .section-title { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+    .section-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .section-dot.cyan { background: #22d3ee; }
+    .section-dot.emerald { background: #34d399; }
+    .section-dot.amber { background: #fbbf24; }
+    .section-dot.rose { background: #fb7185; }
+    .section-dot.violet { background: #a78bfa; }
+
+    p { line-height: 1.8; margin-bottom: 0.6rem; font-size: 0.9rem; }
+    .highlight { color: #fbbf24; font-weight: 600; }
+    .tag { display: inline-block; background: rgba(34, 211, 238, 0.12); color: #22d3ee; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 999px; margin-right: 0.25rem; }
+    .weight { color: #64748b; font-size: 0.75rem; }
+
+    ul { list-style: none; margin: 0.5rem 0 1rem 0; }
+    li { padding: 0.3rem 0; font-size: 0.9rem; line-height: 1.6; padding-left: 1.2rem; position: relative; }
+    li::before { content: "•"; position: absolute; left: 0.3rem; color: #64748b; }
+
+    /* Framework table */
+    .fw-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
+    .fw-table th { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 2px solid #334155; color: #94a3b8; font-weight: 600; }
+    .fw-table td { padding: 0.7rem 0.8rem; border-bottom: 1px solid #1e293b; vertical-align: top; }
+    .fw-table .dim { color: #22d3ee; font-weight: 600; width: 12%; }
+    .fw-table .sub { color: #94a3b8; width: 15%; }
+    .fw-table .desc { width: 50%; }
+    .fw-table .eval { width: 23%; color: #a78bfa; font-size: 0.8rem; }
+
+    /* Score card */
+    .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.8rem; margin: 1rem 0; }
+    .score-card { background: rgba(15, 23, 42, 0.6); border-radius: 0.75rem; border: 1px solid #1e293b; padding: 1rem; text-align: center; }
+    .score-num { font-size: 2rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .score-label { font-size: 0.75rem; color: #94a3b8; margin-top: 0.3rem; }
+
+    .insight { background: rgba(251, 191, 36, 0.1); border-left: 3px solid #fbbf24; padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 0.5rem 0.5rem 0; font-size: 0.85rem; }
+    .good { color: #34d399; }
+    .bad { color: #fb7185; }
+
+    .footer { text-align: center; margin-top: 1.5rem; color: #475569; font-size: 0.75rem; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .tab { background: rgba(15, 23, 42, 0.5); border: 1px solid #1e293b; border-radius: 0.5rem; padding: 0.5rem 1rem; font-size: 0.8rem; color: #94a3b8; }
+    .tab.active { background: rgba(34, 211, 238, 0.1); border-color: #22d3ee; color: #22d3ee; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>AI Agent 产品评测框架 v1.0</h1>
+      </div>
+      <p class="subtitle">附：飞书 Aily 异步执行机制深度分析</p>
+    </div>
+
+    <!-- Part 1: 评测框架 -->
+    <h2>Part 1 · 评测框架</h2>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot cyan"></div>
+        <h3>为什么需要评测框架</h3>
+      </div>
+      <p>对比报告容易写得浅，核心原因是<strong>没有统一的衡量标准</strong>。说"Aily 好用"和"Manus 好用"用的是两把尺子，结论就没法比。</p>
+      <p>一个严谨的评测框架需要回答三个问题：</p>
+      <ul>
+        <li><span class="highlight">评什么</span> — 哪些维度是关键的？</li>
+        <li><span class="highlight">怎么评</span> — 每个维度的衡量指标是什么？</li>
+        <li><span class="highlight">谁来看</span> — 不同的用户群体，权重应该不同</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot emerald"></div>
+        <h3>六维评测模型</h3>
+      </div>
+
+      <table class="fw-table">
+        <tr>
+          <th>维度</th>
+          <th>子项</th>
+          <th>衡量内容</th>
+          <th>评测方法</th>
+        </tr>
+        <tr>
+          <td class="dim">D1 任务完成</td>
+          <td class="sub">准确性</td>
+          <td class="desc">完成任务时有没有产生幻觉、漏掉关键信息、编造不存在的事实？</td>
+          <td class="eval">给一个事实明确的任务（如"查2026年5月某具体事件"），核对输出</td>
+        </tr>
+        <tr>
+          <td class="dim"></td>
+          <td class="sub">完整性</td>
+          <td class="desc">所有子任务是否都完成了？有没有遗漏步骤？</td>
+          <td class="eval">给出多步骤任务，核对每个步骤的执行情况</td>
+        </tr>
+        <tr>
+          <td class="dim"></td>
+          <td class="sub">一致性</td>
+          <td class="desc">同样的任务跑两次，输出的质量和方向是否稳定？</td>
+          <td class="eval">重复跑同一个任务3次，对比输出差异</td>
+        </tr>
+        <tr>
+          <td class="dim">D2 用户体验</td>
+          <td class="sub">交互质量</td>
+          <td class="desc">产品会主动问问题来明确需求吗？还是闷头干活？</td>
+          <td class="eval">给一个模糊的任务目标，观察任务分解情况</td>
+        </tr>
+        <tr>
+          <td class="dim"></td>
+          <td class="sub">透明度</td>
+          <td class="desc">用户能不能看到它现在在做什么？进度是否清晰？</td>
+          <td class="eval">观察中途的步骤展示、进度提示</td>
+        </tr>
+        <tr>
+          <td class="dim"></td>
+          <td class="sub">结果通知</td>
+          <td class="desc">任务完成后，用户怎么知道？是否及时？</td>
+          <td class="eval">计时从提交到收到通知</td>
+        </tr>
+        <tr>
+          <td class="dim">D3 交付质量</td>
+          <td class="sub">格式水平</td>
+          <td class="desc">输出结果的排版、结构、可视化程度</td>
+          <td class="eval">观察输出的呈现形式（MD/HTML/图表）</td>
+        </tr>
+        <tr>
+          <td class="dim"></td>
+          <td class="sub">可用性</td>
+          <td class="desc">输出结果能不能直接拿去用？还是要二次加工？</td>
+          <td class="eval">判断：复制粘贴就能用，还是需要重写</td>
+        </tr>
+        <tr>
+          <td class="dim"></td>
+          <td class="sub">协作性</td>
+          <td class="desc">输出结果能否在团队中分享、评论、继续编辑？</td>
+          <td class="eval">检查是否支持导出/分享/协作编辑</td>
+        </tr>
+        <tr>
+          <td class="dim">D4 技术性能</td>
+          <td class="sub">速度</td>
+          <td class="desc">从提交到出结果的时间</td>
+          <td class="eval">跑标准测试任务，计时</td>
+        </tr>
+        <tr>
+          <td class="dim"></td>
+          <td class="sub">可靠性</td>
+          <td class="desc">是否会中途失败、超时、崩溃？</td>
+          <td class="eval">多次测试，统计失败率</td>
+        </tr>
+        <tr>
+          <td class="dim"></td>
+          <td class="sub">容错</td>
+          <td class="desc">失败后会不会自动重试？给不给替代方案？</td>
+          <td class="eval">故意给一个会失败的任务，观察错误处理</td>
+        </tr>
+        <tr>
+          <td class="dim">D5 工具范围</td>
+          <td class="sub">广度</td>
+          <td class="desc">能调用多少种不同类型的工具？</td>
+          <td class="eval">列举支持的工具类型数量</td>
+        </tr>
+        <tr>
+          <td class="dim"></td>
+          <td class="sub">深度</td>
+          <td class="desc">在某个具体工具上的操作能力有多强？</td>
+          <td class="eval">测试该工具的具体操作能力</td>
+        </tr>
+        <tr>
+          <td class="dim"></td>
+          <td class="sub">扩展性</td>
+          <td class="desc">用户能否接入自定义工具/API？</td>
+          <td class="eval">检查是否支持MCP等扩展协议</td>
+        </tr>
+        <tr>
+          <td class="dim">D6 商业可行</td>
+          <td class="sub">成本</td>
+          <td class="desc">单次任务的大致成本</td>
+          <td class="eval">测算或估算单次任务成本</td>
+        </tr>
+        <tr>
+          <td class="dim"></td>
+          <td class="sub">商业模式</td>
+          <td class="desc">定价是否合理？商业模式能否持续？</td>
+          <td class="eval">分析定价策略与成本结构</td>
+        </tr>
+        <tr>
+          <td class="dim"></td>
+          <td class="sub">可替换性</td>
+          <td class="desc">用户迁移到其他产品的成本有多高？</td>
+          <td class="eval">分析生态绑定程度和切换成本</td>
+        </tr>
+      </table>
+
+      <div class="insight">
+        💡 不同用户对维度的权重不同。企业用户可能 D2（协作性）×2，个人用户可能 D3（交付质量）×2。评测框架不能脱离用户画像。
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot amber"></div>
+        <h3>标准评测流程</h3>
+      </div>
+      <p>一个可复现的评测应该按这个流程走：</p>
+      <ul>
+        <li><strong>Step 1：定用户画像</strong> — "谁在用？看重什么？"（决定权重）</li>
+        <li><strong>Step 2：选评测任务</strong> — 3个标准任务覆盖不同能力维度</li>
+        <li><strong>Step 3：跑任务 + 记录</strong> — 各维度打1-10分，记录异常</li>
+        <li><strong>Step 4：加权打分</strong> — 按用户画像权重计算总分</li>
+        <li><strong>Step 5：出结论</strong> — 适用场景 + 不适用场景 + 改进建议</li>
+      </ul>
+
+      <div class="insight">
+        💡 这个框架的用途不止于"对比产品"。你可以把它用在面试里——对方问"你怎么评估一个AI产品"，你直接把这个框架展开讲，就是高分回答。
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Part 2: 深度分析 -->
+    <h2>Part 2 · 深度案例：Aily 异步执行机制分析</h2>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot violet"></div>
+        <h3>选这个点的原因</h3>
+      </div>
+      <p>你之前说两个产品的核心体验就是<strong>"丢任务就走，回来收结果"</strong>。异步执行是所有 Agent 产品最关键的体验，但很少有分析真的把这个过程拆开来看。</p>
+      <p>下面我们用框架中的 <span class="highlight">D2 用户体验（透明度）</span> 和 <span class="highlight">D4 技术性能（可靠性+容错）</span> 两个维度，把 Aily 的异步执行机制挖透。</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot cyan"></div>
+        <h3>Aily 异步执行的全过程拆解</h3>
+      </div>
+
+      <h4>阶段一：任务提交</h4>
+      <p>用户输入→Aily 判断任务复杂度→如果是长任务，提示"将异步执行，完成后通知你"</p>
+      <p><span class="good">值得注意的设计点：</span> Aily 会主动告知用户"这个任务我要异步跑，你可以忙别的"。这种预期管理是好的UX设计——用户提前知道你不会马上得到结果，就不会焦躁地刷新页面。</p>
+      <p><span class="bad">可以改进的点：</span> 如果能让用户选择"立即执行"或"排队执行"，会更灵活。有时用户愿意等，有时用户想插队。</p>
+
+      <h4>阶段二：任务分解</h4>
+      <p>Aily 把目标拆成子任务列表，展示给用户看。这是 ReAct 循环的首次 Planning 输出。</p>
+      <p><span class="good">设计点：</span> 展示步骤列表，用户可以预期它接下来要做什么，也能发现是否有遗漏。</p>
+      <p><span class="bad">痛点：</span> 这个步骤列表能不能修改？如果用户觉得某个步骤不合理，能不能手动编辑？目前不行——不能改。这是"黑盒"的表现之一。</p>
+
+      <h4>阶段三：后台执行</h4>
+      <p>用户离开去做其他事。Aily 在云端逐步骤执行：思考→调用工具→观察结果→再思考→下一步。</p>
+      <p><span class="good">设计点：</span> 用户不需要守着。这是 Agent 的核心价值。</p>
+      <p><span class="bad">痛点（基于你的体验推测）：</span></p>
+      <ul>
+        <li>如果某一步卡住了（比如搜索超时），它会怎么处理？重试？跳过？还是整任务失败？——目前不清楚，没有暴露这些信息</li>
+        <li>中间过程是否实时可查？你在飞书里能不能打开一个"日志"页面看它执行到哪步了？——如果能看但你没看过，说明这个入口不够明显</li>
+        <li>长任务会不会因为上下文太长而模型飘逸？你提到过"模型飘逸"——可能在执行到第10步时，已经忘了第1步的结论</li>
+      </ul>
+
+      <h4>阶段四：结果交付</h4>
+      <p>任务完成 → 飞书消息推送通知 → 用户点击查看结果</p>
+      <p><span class="good">设计点：</span> 通知直接在飞书里推送，不需要另开页面。你在飞书里工作，结果直接送到你面前。</p>
+      <p><span class="bad">痛点：</span> 如果推送通知时你正在开会/不在电脑前，5分钟后看到消息——点进去结果还在吗？有没有过期？这个对使用体验影响很大。</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot rose"></div>
+        <h3>按评测框架打分（你确认或修改）</h3>
+      </div>
+
+      <div class="score-grid">
+        <div class="score-card">
+          <div class="score-num" style="color:#34d399">8/10</div>
+          <div class="score-label">交互质量</div>
+        </div>
+        <div class="score-card">
+          <div class="score-num" style="color:#fbbf24">5/10</div>
+          <div class="score-label">透明度</div>
+        </div>
+        <div class="score-card">
+          <div class="score-num" style="color:#fbbf24">6/10</div>
+          <div class="score-label">可靠性</div>
+        </div>
+        <div class="score-card">
+          <div class="score-num" style="color:#fb7185">4/10</div>
+          <div class="score-label">容错</div>
+        </div>
+        <div class="score-card">
+          <div class="score-num" style="color:#34d399">9/10</div>
+          <div class="score-label">结果通知</div>
+        </div>
+        <div class="score-card">
+          <div class="score-num" style="color:#fb7185">4/10</div>
+          <div class="score-label">用户可控性</div>
+        </div>
+      </div>
+
+      <p><span class="highlight">总体评价：Aily 的异步执行在"体验流畅度"上做得很好（提交→等待→通知→查看），但在"中间过程可控性"上很弱（不能干预、不能看详细日志、不能修复卡住的步骤）。</span></p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="section-dot amber"></div>
+        <h3>在这个维度上，Aily 和 Manus 的差异</h3>
+      </div>
+      <p>如果你也按同样的维度给 Manus 打分，就能直接对比了：</p>
+      <table class="fw-table">
+        <tr>
+          <th>子维度</th>
+          <th>Aily（我的打分）</th>
+          <th>Manus</th>
+          <th>说明</th>
+        </tr>
+        <tr>
+          <td>交互质量</td>
+          <td>8/10</td>
+          <td>？（需要测）</td>
+          <td>Aily会提示"将异步执行"做好预期管理</td>
+        </tr>
+        <tr>
+          <td>透明度</td>
+          <td>5/10</td>
+          <td>？（需要测）</td>
+          <td>两个都不算好，但Manus有实时log，Aily步骤列表不够详细</td>
+        </tr>
+        <tr>
+          <td>可靠性</td>
+          <td>6/10</td>
+          <td>？（需要测）</td>
+          <td>都有漂移和失败问题</td>
+        </tr>
+        <tr>
+          <td>容错</td>
+          <td>4/10</td>
+          <td>？（需要测）</td>
+          <td>两者都不太会处理中间步骤失败的情况</td>
+        </tr>
+        <tr>
+          <td>结果通知</td>
+          <td>9/10</td>
+          <td>？（需要测）</td>
+          <td>飞书生态优势明显</td>
+        </tr>
+        <tr>
+          <td>用户可控性</td>
+          <td>4/10</td>
+          <td>？（需要测）</td>
+          <td>都不能干预中间步骤</td>
+        </tr>
+      </table>
+
+      <div class="insight">
+        💡 你发现的"Aily默认出MD，Manus默认出HTML"差异，应该放在D3（交付质量）里评，而不只是感觉"Manus比较牛逼"。框架的价值就是让感觉变成可量化的指标。同样的，你也基于你的体验，给Aily在某些维度打分或者修改，让这个文档更准确。
+      </div>
+    </div>
+
+    <div class="footer">
+      YC-Indis · AI × Web3 School Cohort 0 · 基于飞书Aily亲身使用 + Manus试用体验 · 2026-05-29
+    </div>
+  </div>
+</body>
+</html>
